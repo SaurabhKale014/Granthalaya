@@ -82,6 +82,27 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+
+
+# ... other settings ...
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv('DEBUG') == 'True'
+
+# Allow all hosts on Render, or specify your domain
+ALLOWED_HOSTS = []
+
+# Dynamic allowed hosts for Render
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+else:
+    ALLOWED_HOSTS.extend(['localhost', '127.0.0.1'])
+
+# CSRF trusted origins for HTTPS
+CSRF_TRUSTED_ORIGINS = []
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
