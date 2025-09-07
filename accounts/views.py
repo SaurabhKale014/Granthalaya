@@ -26,7 +26,7 @@ class LoginView(APIView):
             user=serializer.validated_data['user']
             refresh=RefreshToken.for_user(user)
             return Response({
-              'User ID':user.id,
+              'id':user.id,
               'Email':user.email,
               'refresh':str(refresh),
               'access':str(refresh.access_token)  
