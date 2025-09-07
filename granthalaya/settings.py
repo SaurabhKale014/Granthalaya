@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'library',
     'adminpanel',
     'userpanel',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
+    'corsheaders'
     
 ]
 
@@ -54,6 +55,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -181,3 +183,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Add to settings.py
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React development server
+    "https://granthalaya.onrender.com",  # Your backend
+]
+
+
