@@ -5,9 +5,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.db import connection
+from rest_framework.permissions import  IsAuthenticated
+from .authentication import CustomJWTAuthentication
+from .permissions import IsAdmin
 
 class AuthorListCreateView(APIView):
-
+    permission_classes = [IsAuthenticated,IsAdmin]
+    authentication_classes=[CustomJWTAuthentication]
     def get(self, request):
         authors=Author.objects.all()
         serializer=AuthorSerializer(authors, many=True)
@@ -21,6 +25,8 @@ class AuthorListCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class AuthorUpdateDeleteView(APIView):
+    permission_classes = [IsAuthenticated,IsAdmin]
+    authentication_classes=[CustomJWTAuthentication]
     def patch(self, request, pk):
         with connection.cursor() as cursor:
             cursor.execute("select id from Authors where id=%s",[pk])
@@ -50,6 +56,8 @@ class AuthorUpdateDeleteView(APIView):
         
 
 class BookListCreateView(APIView):
+    permission_classes = [IsAuthenticated,IsAdmin]
+    authentication_classes=[CustomJWTAuthentication]
     def get(self,request):
         books=Book.objects.all()
         serializer=BookSerializer(books,many=True)
@@ -63,6 +71,8 @@ class BookListCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class BookUpdateDeleteView(APIView):
+    permission_classes = [IsAuthenticated,IsAdmin]
+    authentication_classes=[CustomJWTAuthentication]
     def patch(self, request, pk):
         with connection.cursor() as cursor:
             cursor.execute("select id  from Books where id=%s",[pk])
@@ -89,6 +99,8 @@ class BookUpdateDeleteView(APIView):
             return Response({"message":"Book deleted successfully."})
 
 class ApproveBorrowRequestView(APIView):
+    permission_classes = [IsAuthenticated,IsAdmin]
+    authentication_classes=[CustomJWTAuthentication]
     def patch(self, request, record_id):
         try:
             with connection.cursor() as cursor:
@@ -125,6 +137,8 @@ class ApproveBorrowRequestView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class ApproveReturnRequestView(APIView):
+    permission_classes = [IsAuthenticated,IsAdmin]
+    authentication_classes=[CustomJWTAuthentication]
     def patch(self,request,record_id):
         try:
             with connection.cursor() as cursor:
@@ -144,8 +158,8 @@ class ApproveReturnRequestView(APIView):
 
 
 class AllBorrowRecordsView(APIView):
-    # permission_classes = [IsAdminUser]
-    
+    permission_classes = [IsAuthenticated,IsAdmin]
+    authentication_classes=[CustomJWTAuthentication]
     def get(self, request):
         try:
             with connection.cursor() as cursor:

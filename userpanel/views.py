@@ -4,8 +4,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 import datetime
+from adminpanel.authentication import CustomJWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 class AvailableBooksView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes=[CustomJWTAuthentication]
     def get(self, request):
         with connection.cursor() as cursor:
             cursor.execute("select b.id,b.title ,a.name as Author_name,b.published_date from Books b left join Authors a on b.author_id=a.id where b.available_copies > 0;")
@@ -56,10 +60,12 @@ class AvailableBooksView(APIView):
 #             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class BorrowRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes=[CustomJWTAuthentication]
     def post(self, request, book_id):
         try:
-            # user_id = request.user.id
-            user_id=request.GET.get('id')
+  
+            user_id = request.user.id
             
             with connection.cursor() as cursor:
                 cursor.execute("SELECT id, available_copies FROM Books WHERE id=%s", [book_id])
@@ -92,9 +98,11 @@ class BorrowRequestView(APIView):
 
 
 class ReturnRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes=[CustomJWTAuthentication]
     def patch(self,request,book_id):
         try:
-            user_id=request.GET.get('id')
+            user_id = request.user.id
             with connection.cursor() as cursor:
                 cursor.execute("select id from borrow_records where book_id=%s and user_id=%s and status='approved'",[book_id,user_id])
                 borrow_record=cursor.fetchone()
@@ -109,9 +117,11 @@ class ReturnRequestView(APIView):
 
 
 class MyBorrowedBooksView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes=[CustomJWTAuthentication]
     def get(self,request):
         try:
-            user_id=request.GET.get('id')
+            user_id = request.user.id
             with connection.cursor() as cursor:
                 cursor.execute("""
                     SELECT br.id, b.title, a.name as author_name, 
@@ -140,12 +150,13 @@ class MyBorrowedBooksView(APIView):
             return Response({"error":str(e)},status=status.HTTP_400_BAD_REQUEST)
 
 class BorrowingHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes=[CustomJWTAuthentication]
     def get(self, request):
-        # if not request.user.is_authenticated:
-        #     return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+
         
         try:
-            user_id = request.GET.get('id')
+            user_id = request.user.id
             
             with connection.cursor() as cursor:
                 # Get complete borrowing history
