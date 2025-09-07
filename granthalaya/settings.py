@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'userpanel',
     'rest_framework_simplejwt',
     'corsheaders',
-    'rest_framework_simplejwt.token_blacklist',
+    # 'rest_framework_simplejwt.token_blacklist',
     
 ]
 
@@ -194,12 +194,12 @@ CORS_ALLOWED_ORIGINS = [
 
 # Add to your settings.py (anywhere after REST_FRAMEWORK settings)
 from datetime import timedelta
-
+# AUTH_USER_MODEL = 'accounts.User'
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # 1 hour access token
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # 7 days refresh token
     'ROTATE_REFRESH_TOKENS': True,                   # Get new refresh token on refresh
-    'BLACKLIST_AFTER_ROTATION': True,                # Blacklist old refresh tokens
+    # 'BLACKLIST_AFTER_ROTATION': True,                # Blacklist old refresh tokens
     'UPDATE_LAST_LOGIN': True,                       # Update last login time
     
     'ALGORITHM': 'HS256',
