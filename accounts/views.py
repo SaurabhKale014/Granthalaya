@@ -29,6 +29,7 @@ class LoginView(APIView):
               'id':user.id,
               'Email':user.email,
               'refresh':str(refresh),
-              'access':str(refresh.access_token)  
+              'access':str(refresh.access_token),
+              'is_admin': user.is_admin  
             })
         return Response(serializer.errors,status=401)
