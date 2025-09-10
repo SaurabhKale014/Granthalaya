@@ -304,7 +304,7 @@ class MyAccountView(APIView):
                 "email":user[1],
                 "first_name":user[2],
                 "last_name":user[3],
-                "contact_number":user[4],
+                "contact_no":user[4],
                 "address":user[5],
                 "profile_photo":user[6],
                 "joined_date":user[7],
@@ -324,6 +324,5 @@ class MyAccountView(APIView):
         params=list(update_data.values()) + [user_id]
         with connection.cursor() as cursor:
             cursor.execute(f"update users set {set_clause} where id=%s",params)
-            return Response({"message":"Account details updated successfully"},status=status.HTTP_200_OK)
-        
-        
+            return Response({"message":"Account details updated successfully", "updated_fields": update_data},status=status.HTTP_200_OK)
+
