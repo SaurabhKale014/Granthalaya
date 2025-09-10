@@ -34,3 +34,5 @@ class LoginView(APIView):
               'is_admin': user.is_admin  
             })
         return Response(serializer.errors,status=401)
+
+

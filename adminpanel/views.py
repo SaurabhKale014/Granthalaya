@@ -1,3 +1,4 @@
+from urllib import request
 from django.http import HttpResponse
 from library.models import Author, Book
 from .serializers import *
@@ -213,3 +214,116 @@ class AllBorrowRecordsView(APIView):
             'damage_reported': 'Damage Reported'
         }
         return status_map.get(status, status)
+
+
+import os
+import uuid
+from django.conf import settings 
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import status
+
+
+class ProfilePhotoUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes=[CustomJWTAuthentication]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get(self,request):
+        user_id=request.user.id
+        with connection.cursor() as cursor:
+            cursor.execute("select profile_photo from users where id=%s",[user_id])
+            user=cursor.fetchone()
+            if not user:
+                return Response({"error":"User not found"},status=status.HTTP_404_NOT_FOUND)
+            return Response({"profile_photo":user[0]},status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        user_id = request.user.id  # comes from JWT token
+
+        if "profile_photo" not in request.FILES:
+            return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
+
+        file = request.FILES["profile_photo"]
+
+        # Ensure folder exists
+        upload_dir = os.path.join(settings.MEDIA_ROOT, "profile_pictures")
+        os.makedirs(upload_dir, exist_ok=True)
+
+        # Delete any old files for this user (any extension)
+        import glob
+        old_files = glob.glob(os.path.join(upload_dir, f"{user_id}_profile_photo.*"))
+        for old_file in old_files:
+            try:
+                os.remove(old_file)
+            except FileNotFoundError:
+                pass
+
+        # Always save as <user_id>_profile_photo.<ext>
+        ext = file.name.split(".")[-1]
+        filename = f"{user_id}_profile_photo.{ext}"
+        file_path = os.path.join(upload_dir, filename)
+
+        # Save/overwrite file
+        with open(file_path, "wb+") as dest:
+            for chunk in file.chunks():
+                dest.write(chunk)
+
+        # Relative path stored in DB
+        relative_path = f"profile_pictures/{filename}"
+        full_url = request.build_absolute_uri(settings.MEDIA_URL + relative_path)
+
+        # Raw SQL update
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE users SET profile_photo = %s WHERE id = %s",
+                [full_url, user_id]
+            )        
+
+        return Response(
+            {
+                "message": "Profile photo updated",
+                "profile_photo": full_url,  # frontend-ready full URL
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class MyAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes=[CustomJWTAuthentication]
+    def get(self,request):
+        user_id=request.user.id
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                    select id,email,first_name,last_name,contact_no,address,profile_photo,created_at as joined_date from users""")
+            user=cursor.fetchone()
+            if not user:
+                return Response({"error":"User not found"},status=status.HTTP_404_NOT_FOUND)
+            user_data={
+                "id":user[0],
+                "email":user[1],
+                "first_name":user[2],
+                "last_name":user[3],
+                "contact_number":user[4],
+                "address":user[5],
+                "profile_photo":user[6],
+                "joined_date":user[7],
+            }
+            return Response(user_data,status=status.HTTP_200_OK)
+    
+    def patch(self,request):
+        user_id=request.user.id
+        allowed_fields = ['first_name', 'last_name', 'contact_no', 'address']
+        update_data={}
+        for field in allowed_fields:
+            if field in request.data:
+                update_data[field]=request.data[field]
+        if not update_data:
+            return Response({"message":"No fields provided for update"},status=status.HTTP_400_BAD_REQUEST)
+        set_clause=", ".join([f"{field}=%s" for field in update_data.keys()])
+        params=list(update_data.values()) + [user_id]
+        with connection.cursor() as cursor:
+            cursor.execute(f"update users set {set_clause} where id=%s",params)
+            return Response({"message":"Account details updated successfully"},status=status.HTTP_200_OK)
+        
+        
