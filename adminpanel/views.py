@@ -295,7 +295,7 @@ class MyAccountView(APIView):
         user_id=request.user.id
         with connection.cursor() as cursor:
             cursor.execute("""
-                    select id,email,first_name,last_name,contact_no,address,profile_photo,created_at as joined_date from users""")
+                    select id,email,first_name,last_name,contact_no,address,profile_photo,created_at as joined_date from users where id=%s""",[user_id])
             user=cursor.fetchone()
             if not user:
                 return Response({"error":"User not found"},status=status.HTTP_404_NOT_FOUND)
