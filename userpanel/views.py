@@ -100,11 +100,11 @@ class BorrowRequestView(APIView):
 class ReturnRequestView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes=[CustomJWTAuthentication]
-    def patch(self,request,book_id):
+    def patch(self,request,record_id):
         try:
             user_id = request.user.id
             with connection.cursor() as cursor:
-                cursor.execute("select id from borrow_records where book_id=%s and user_id=%s and status='approved'",[book_id,user_id])
+                cursor.execute("select id from borrow_records where id=%s and user_id=%s and status='approved'",[record_id,user_id])
                 borrow_record=cursor.fetchone()
                 if not borrow_record:
                     return Response({"error":"No active borrowed book found for return"})
