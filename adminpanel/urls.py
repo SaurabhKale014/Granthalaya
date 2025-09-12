@@ -1,7 +1,7 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import AuthorListCreateView, AuthorUpdateDeleteView,BookListCreateView,BookUpdateDeleteView,ApproveBorrowRequestView,ApproveReturnRequestView,AllBorrowRecordsView,ProfilePhotoUpdateView,MyAccountView,AdminDashboardView,NotificationView
+from .views import AuthorListCreateView, AuthorUpdateDeleteView,BookListCreateView,BookUpdateDeleteView,ApproveBorrowRequestView,ApproveReturnRequestView,AllBorrowRecordsView,ProfilePhotoUpdateView,MyAccountView,AdminDashboardView,NotificationView,UserManagement
 
 urlpatterns = [
     path('admin-dashboard/',AdminDashboardView.as_view()),
@@ -19,5 +19,8 @@ urlpatterns = [
     path('my-account/', MyAccountView.as_view(), name='my-account'),# GET
     path('my-account/update/',MyAccountView.as_view()),              # PATCH
     path('notification/',NotificationView.as_view()),
+    path('users-list/',UserManagement.as_view()),   # GET list of all users
+    path('users-update/<int:id>/',UserManagement.as_view()), # Update users status
+    path('users-delete/<int:id>/',UserManagement.as_view()), # Delete user
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

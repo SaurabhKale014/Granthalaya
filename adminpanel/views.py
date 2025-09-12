@@ -429,3 +429,56 @@ class NotificationView(APIView):
             "message": "No new notification today."
            
         }, status=200)
+
+class UserManagement(APIView):
+    permission_classes=[IsAuthenticated,IsAdmin]
+    authentication_classes=[CustomJWTAuthentication]
+    def get(self,request):
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                select id , concat(first_name,' ',last_name) AS name ,email,contact_no,address,is_active from users where is_admin !=1""")
+            user_data=cursor.fetchall()
+            data=[]
+            for record in user_data:
+                id,name,email,contact_no,address,is_active=record
+                data.append({
+                    'id':id,
+                    'name':name,
+                    'email':email,
+                    'contact_no':contact_no,
+                    'address':address,
+                    'is_active':"Active" if is_active==1 else "Inactive"
+                })
+            return Response({"data":data},status=200)
+        
+        
+    
+    def patch(self,request,id):
+        status=request.data.get('action')
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                           select id from users where id=%s""",[id])
+                data=cursor.fetchone()
+                if data:
+                    cursor.execute("""
+                           update users set is_active=%s where id=%s""",[status,id])
+                    return Response({"message":"User updated successfully"},status=200)
+                return Response({"message":"User not found"},status=404)
+        
+        except Exception as e:
+            return Response({"error":e})
+    
+    def delete(self,request,id):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("select id from users where id=%s",[id])
+                user=cursor.fetchone()
+                if user:
+                    cursor.execute("delete from users where id=%s",[id])
+                    return Response({"message":"User deleted successfully."},status=200)
+                return Response({"error":"User not found."},status=404)
+        except Exception as e:
+            return Response({"error":e})
+
+
