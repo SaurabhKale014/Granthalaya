@@ -1,13 +1,17 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import AuthorListCreateView, AuthorUpdateDeleteView,BookListCreateView,BookUpdateDeleteView,ApproveBorrowRequestView,ApproveReturnRequestView,AllBorrowRecordsView,ProfilePhotoUpdateView,MyAccountView
+from .views import AuthorListCreateView, AuthorUpdateDeleteView,BookListCreateView,BookUpdateDeleteView,ApproveBorrowRequestView,ApproveReturnRequestView,AllBorrowRecordsView,ProfilePhotoUpdateView,MyAccountView,AdminDashboardView
+
 urlpatterns = [
+    path('admin-dashboard/',AdminDashboardView.as_view()),
     path('authors/',AuthorListCreateView.as_view(), name='author-list-create'),
     path('authors/<int:pk>/',AuthorUpdateDeleteView.as_view()),
     path('books/',BookListCreateView.as_view()),
     path('books/<int:pk>/',BookUpdateDeleteView.as_view()),
+    path('borrow-request-list/',ApproveBorrowRequestView.as_view()), # Get list of borrow requests
     path('approve-borrow/<int:record_id>/',ApproveBorrowRequestView.as_view()),
+    path('return-request-list/',ApproveReturnRequestView.as_view()), # Get list of return requests
     path('approve-return/<int:record_id>/',ApproveReturnRequestView.as_view()),
     path('all-records/', AllBorrowRecordsView.as_view(), name='all-records'),
     path('set-profile-photo/',ProfilePhotoUpdateView.as_view()),    # GET

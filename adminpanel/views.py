@@ -10,6 +10,44 @@ from rest_framework.permissions import  IsAuthenticated
 from .authentication import CustomJWTAuthentication
 from .permissions import IsAdmin
 
+
+class AdminDashboardView(APIView):
+    permission_classes=[IsAuthenticated, IsAdmin]
+    authentication_classes=[CustomJWTAuthentication]
+    def get(self,request):
+        with connection.cursor() as cursor:
+            # Total Users 
+            cursor.execute("select count(*) from users")
+            total_users=cursor.fetchone()
+
+            #Active users
+            cursor.execute("select count(*) from users where is_active=1")
+            active_users=cursor.fetchone()
+
+            #Inactive users
+            cursor.execute("select count(*) from users where is_active=0")
+            inactive_users=cursor.fetchone()[0]
+
+            #Total Books
+            cursor.execute("select count(*) from Books")
+            total_books=cursor.fetchone()
+
+            #Available Books
+            cursor.execute("select count(*) from Books where available_copies > 0")
+            available_books=cursor.fetchone()[0]
+
+            #Pending Borrow Requests
+            cursor.execute("select count(*) from borrow_records where status='pending_approval'")
+            pending_requests=cursor.fetchone()
+            return Response({
+                "total_users":total_users[0],
+                "active_users":active_users[0],
+                "inactive_users":inactive_users,
+                "total_books":total_books[0],
+                "available_books":available_books,
+                "pending_requests":pending_requests[0]
+            })
+
 class AuthorListCreateView(APIView):
     permission_classes = [IsAuthenticated,IsAdmin]
     authentication_classes=[CustomJWTAuthentication]
@@ -102,6 +140,27 @@ class BookUpdateDeleteView(APIView):
 class ApproveBorrowRequestView(APIView):
     permission_classes = [IsAuthenticated,IsAdmin]
     authentication_classes=[CustomJWTAuthentication]
+
+    def get(self,request):
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                            select br.id as record_no,concat(u.first_name,' ',u.last_name)as name, b.title as book_name,date(borrow_requested_at) as request_date from borrow_records br 
+            left join users u on br.user_id=u.id 
+            left join Books b on br.book_id=b.id
+            where br.status='pending_approval'
+            """)
+            request_records=cursor.fetchall()
+            data=[]
+            for record in request_records:
+                record_id, user_name, book_name,request_date = record
+                data.append({
+                    'record_id':record_id,
+                    'user_name':user_name,
+                    'book_name':book_name,
+                    'request_date':request_date
+                })
+            return Response({"data":data})
+
     def patch(self, request, record_id):
         try:
             with connection.cursor() as cursor:
@@ -140,6 +199,26 @@ class ApproveBorrowRequestView(APIView):
 class ApproveReturnRequestView(APIView):
     permission_classes = [IsAuthenticated,IsAdmin]
     authentication_classes=[CustomJWTAuthentication]
+
+    def get(self,request):
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                            select br.id as record_no,concat(u.first_name,' ',u.last_name)as name, b.title as book_name,date(return_requested_at) as request_date from borrow_records br 
+            left join users u on br.user_id=u.id 
+            left join Books b on br.book_id=b.id
+            where br.status='return_requested'
+            """)
+            request_records=cursor.fetchall()
+            data=[]
+            for record in request_records:
+                record_id, user_name, book_name,request_date = record
+                data.append({
+                    'record_id':record_id,
+                    'user_name':user_name,
+                    'book_name':book_name,
+                    'request_date':request_date
+                })
+            return Response({"data":data})
     def patch(self,request,record_id):
         try:
             with connection.cursor() as cursor:
