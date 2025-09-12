@@ -1,7 +1,7 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import AuthorListCreateView, AuthorUpdateDeleteView,BookListCreateView,BookUpdateDeleteView,ApproveBorrowRequestView,ApproveReturnRequestView,AllBorrowRecordsView,ProfilePhotoUpdateView,MyAccountView,AdminDashboardView
+from .views import AuthorListCreateView, AuthorUpdateDeleteView,BookListCreateView,BookUpdateDeleteView,ApproveBorrowRequestView,ApproveReturnRequestView,AllBorrowRecordsView,ProfilePhotoUpdateView,MyAccountView,AdminDashboardView,NotificationView
 
 urlpatterns = [
     path('admin-dashboard/',AdminDashboardView.as_view()),
@@ -17,6 +17,7 @@ urlpatterns = [
     path('set-profile-photo/',ProfilePhotoUpdateView.as_view()),    # GET
     path('get-profile-photo/',ProfilePhotoUpdateView.as_view()),    # PATCH
     path('my-account/', MyAccountView.as_view(), name='my-account'),# GET
-    path('my-account/update/',MyAccountView.as_view())              # PATCH
+    path('my-account/update/',MyAccountView.as_view()),              # PATCH
+    path('notification/',NotificationView.as_view()),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

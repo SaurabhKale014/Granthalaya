@@ -405,3 +405,27 @@ class MyAccountView(APIView):
             cursor.execute(f"update users set {set_clause} where id=%s",params)
             return Response({"message":"Account details updated successfully", "updated_fields": update_data},status=status.HTTP_200_OK)
 
+class NotificationView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CustomJWTAuthentication]
+
+    def get(self, request):
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, title, DATE(created_at) as created_date
+                FROM Books
+                WHERE DATE(created_at) = CURDATE()
+            """)
+            books_added = cursor.fetchall()
+
+        if books_added:
+            book_list = [{"id": b[0], "title": b[1], "date": str(b[2])} for b in books_added]
+            return Response({
+                "message": f"{len(book_list)} new book added today"
+               
+            }, status=200)
+
+        return Response({
+            "message": "No new notification today."
+           
+        }, status=200)

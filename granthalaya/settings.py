@@ -105,7 +105,7 @@ from dotenv import load_dotenv
 # ... other settings ...
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG') == 'True'
+# DEBUG = os.getenv('DEBUG') == 'True'
 
 # Allow all hosts on Render, or specify your domain
 ALLOWED_HOSTS = []
